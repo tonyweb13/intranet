@@ -1,0 +1,121 @@
+<template>
+    <ibox title="List of Designations">
+        <add-button @add="addEditRow()" textToAdd="Designation"/>
+        <div>
+            <v-client-table :data="rows" :columns="columns" :options="options">
+                <template slot="actions" slot-scope="props">
+                    <button class='btn btn-primary btn-xs' @click="addEditRow(props.row)"><i class="fa fa-pencil"></i> {{ labels.editBtn }}</button>
+                    <button class='btn btn-danger btn-xs' @click="deleteRow(props.row)"><i class="fa fa-remove"></i> {{ labels.deleteBtn }}</button>
+                </template>
+            </v-client-table>
+        </div>
+
+        <modal v-if="openModal" @close="openModal = false">
+            <h3 slot="header">{{ headerName }}</h3>
+            <small slot="header" class="pull-right required_fields"><i>Required Fields ( <span class="required_asterisk">*</span> )</i></small>
+            <add-edit :designationProps="desig_data" slot="body" />
+        </modal>
+
+    </ibox>
+</template>
+<script>
+    import addEdit from '../../../components/settings/designation/addEdit.vue'
+
+    export default {
+        components: { addEdit },
+        props:
+            {
+                labels: {
+                    type: Object,
+                    default() {
+                        return {
+                            add: 'Add Designation',
+                            edit: 'Edit Designation',
+                            editBtn: 'Edit',
+                            deleteBtn: 'Delete'
+                        }
+                    }
+                },
+
+            },
+        data: function () {
+            return {
+                columns: ['actions', 'name'],
+                rows: [],
+                options: {
+                    headings: {
+                        actions: 'Actions',
+                        name: 'Name',
+                    },
+                    sortable: ['name'],
+                    filterable: ['name']
+                },
+                headerName: '',
+                openModal: false,
+                desig_data: {
+                    desig_name: '',
+                    desig_id: ''
+                },
+            };
+        },
+        created() {
+            this.getList();
+            this.$bus.$on('updateList', this.getList);
+            this.$bus.$on('init_modal', (param) => {
+                this.openModal = param;
+            });
+        },
+        methods: {
+            getList: function () {
+                this.$constants.Settings_API.get("/designation")
+                    .then(response => {
+                        this.rows = response.data;
+                    });
+            },
+            addEditRow: function (props_row) {
+                this.openModal = true;
+                if(props_row){
+                    this.headerName = this.labels.edit;
+                    this.desig_data.desig_name = props_row.name;
+                    this.desig_data.desig_id = props_row.id;
+                } else {
+                    this.headerName = this.labels.add;
+                    this.desig_data.desig_name = '';
+                    this.desig_data.desig_id = '';
+                }
+            },
+            deleteRow: function (props_row) {
+                swal({
+                    title: 'Are you sure you want to delete ' + props_row.name + ' ?',
+                    text: "Once deleted, you will not be able to revert this!",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'No, cancel!',
+                    confirmButtonClass: 'btn btn-success',
+                    cancelButtonClass: 'btn btn-danger',
+                })
+                    .then((result) => {
+                        if (result.value) {
+                            this.$constants.Settings_API.delete("/designation/" + props_row.id)
+                                .then(response => {
+                                    response.data;
+                                    this.getList();
+                                });
+                            swal(
+                                'Deleted!',
+                                props_row.name + ' has been deleted!',
+                                "success",
+                            );
+                        } else if (result.dismiss === swal.DismissReason.cancel) {
+                            swal(
+                                'Cancelled',
+                                props_row.name + ' is safe!',
+                                'error'
+                            )
+                        }
+                    })
+            },
+        }
+    };
+</script>

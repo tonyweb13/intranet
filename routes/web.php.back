@@ -1,0 +1,239 @@
+<?php
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| contains the "web" middleware group. Now create something great!
+|
+*/
+
+////
+//Route::get('/', function () {
+//    return view('index');
+//})->middleware('auth');
+//
+//
+//Route::get('/home', function () {
+//    return view('index');
+//})->middleware('auth');
+
+Route::group(['middleware' => ['web']], function() {
+
+    Route::get('login',  'Auth\LoginController@showLoginForm')->name('login');
+    Route::post('login', ['as' => 'login.post', 'uses' => 'Auth\LoginController@login']);
+    Route::get('logout', ['as' => 'logout', 'uses' => 'Auth\LoginController@logout']);
+
+    // // Registration Routes...
+    //     Route::get('register', ['as' => 'register', 'uses' => 'Auth\RegisterController@showRegistrationForm']);
+    //     Route::post('register', ['as' => 'register.post', 'uses' => 'Auth\RegisterController@register']);
+
+    // // Password Reset Routes...
+    //     Route::get('password/reset', ['as' => 'password.reset', 'uses' => 'Auth\ForgotPasswordController@showLinkRequestForm']);
+    //     Route::post('password/email', ['as' => 'password.email', 'uses' => 'Auth\ForgotPasswordController@sendResetLinkEmail']);
+    //     Route::get('password/reset/{token}', ['as' => 'password.reset.token', 'uses' => 'Auth\ResetPasswordController@showResetForm']);
+    //     Route::post('password/reset', ['as' => 'password.reset.post', 'uses' => 'Auth\ResetPasswordController@reset']);
+
+});
+
+//Route::group(['middleware' => ['auth']], function () {
+//    Route::get('/{any}', 'HomeController@index')->where('any', '.*');
+//});
+
+
+/*Start Vue Access*/
+//
+//Route::group([
+//    'prefix' => 'admin', 'middleware' => ['auth']
+//], function () {
+//    Route::view('/payment', 'index');
+//    Route::view('/supplies', 'index');
+//});
+
+//Route::group([
+//    'prefix' => 'loanapproval', 'middleware' => ['auth']
+//], function () {
+//    Route::view('/application', 'index');
+//    Route::view('/application/{action}/{id}', 'index');
+//});
+//
+//Route::group([
+//    'prefix' => 'tk', 'middleware' => ['auth']
+//], function () {
+//    Route::view('/workweek', 'index');
+//    Route::view('/shiftactivities', 'index');
+//    Route::view('/shift', 'index');
+//    Route::view('/schedules', 'index');
+//});
+//
+//Route::group([
+//    'prefix' => 'settings', 'middleware' => ['auth']
+//], function () {
+//    Route::view('/acl', 'index');
+//    Route::view('/department', 'index');
+//    Route::view('/states', 'index');
+//    Route::view('/employee', 'index');
+//    Route::view('/employee/{id}/edit', 'index');
+//    Route::view('/costcenter', 'index');
+//    Route::view('/designation', 'index');
+//    Route::view('/officelocation', 'index');
+//    Route::view('/employment', 'index');
+//    Route::view('/portfolio', 'index');
+//
+//});
+//
+//Route::group([
+//    'prefix' => 'nte', 'middleware' => ['auth']
+//], function () {
+//    Route::view('/profile', 'index');
+//    Route::view('/nte', 'index');
+//    Route::view('/provision', 'index');
+//    Route::view('/gravity', 'index');
+//    Route::view('/edit/{id}', 'index');
+//    Route::view('/add/{id}', 'index');
+//    Route::view('/list', 'index');
+//});
+//
+//Route::group([
+//    'prefix' => 'qa', 'middleware' => ['auth']
+//], function () {
+//    Route::view('/main', 'index');
+//    Route::view('/form/form-list', 'index');
+//    Route::view('/form/audit-status', 'index');
+//    Route::view('/form/coaching-logs', 'index');
+//    Route::view('/form/disputes', 'index');
+//    Route::view('/form/clarifications', 'index');
+//    Route::view('/reports/monthly-score', 'index');
+//    Route::view('/reports/score-summary', 'index');
+//    Route::view('/reports/originator-summary', 'index');
+//    Route::view('/reports/collector-summary', 'index');
+//    Route::view('/reports/detailed-report', 'index');
+//    Route::view('/reports/status-report', 'index');
+//    Route::view('/settings/categories', 'index');
+//    Route::view('/settings/sub-categories', 'index');
+//    Route::view('/settings/descriptions', 'index');
+//    Route::view('/settings/import-employee', 'index');
+//    Route::view('/settings/user', 'index');
+//});
+
+/*End Vue Access*/
+
+
+/*Start API Route*/
+Route::group([
+    'prefix' => 'api', 'middleware' => ['auth']
+], function () {
+
+    Route::get('/user/getLoginUser', 'UserController@getLoginUser');
+
+    Route::group([
+        'prefix' => 'admin', 'middleware' => ['auth']
+    ], function () {
+        Route::get('/dropdown/requestedby', 'Api\Admin\DropdownController@requestedBy');
+        Route::get('/dropdown/supervisor', 'Api\Admin\DropdownController@supervisor');
+        Route::get('/dropdown/assistant', 'Api\Admin\DropdownController@assistant');
+        Route::resource('/request_payment', 'Api\Admin\RequestPaymentController');
+        Route::resource('/purchasing_supplies', 'Api\Admin\PurchasingSuppliesController');
+        //issuance of nte
+        Route::resource('/nte', 'Api\Admin\NteController');
+        Route::resource('/ntelistform', 'Api\Admin\NteFormController');
+        Route::resource('/provision', 'Api\Admin\ProvisionsController');
+        Route::resource('/gravity', 'Api\Admin\GravityController');
+        Route::get('/ntelist/{id}', 'Api\Admin\NteFormController@getInfo');
+        Route::get('/nte/add/{any}', 'Api\Admin\NteController@getNte');
+        Route::get('/nte/getuser/{empno}', 'Api\Admin\NteController@getUser');
+    });
+
+    Route::group([
+        'prefix' => 'loanapproval', 'middleware' => ['auth']
+    ], function () {
+        Route::resource('/application', 'Api\LoanApproval\ApplicationController');
+        Route::get('/application/status/{status_id}', 'Api\LoanApproval\ApplicationController@status');
+        Route::resource('/notes', 'Api\LoanApproval\NotesController');
+        Route::resource('/states', 'Api\LoanApproval\StatesController');
+        Route::get('/deplicate-check', 'Api\LoanApproval\NotesController@status');
+    });
+
+    Route::group([
+        'prefix' => 'tk', 'middleware' => ['auth']
+    ], function () {
+        Route::resource('/shiftactivities', 'Api\Tk\ShiftActivitiesController');
+        Route::resource('/shift', 'Api\Tk\ShiftController');
+        Route::resource('/schedules', 'Api\Tk\SchedulesController');
+    });
+
+    Route::group([
+        'prefix' => 'vps', 'middleware' => ['auth']
+    ], function () {
+        /* upload profile pic */
+        Route::post('');
+
+        /*edit profile*/
+        Route::post('/user_update/upload', 'Api\Vps\UserUpdateController@uploadPic');
+        Route::get('/user_update/personal/{id}', 'Api\Vps\UserUpdateController@updatePersonal');
+        Route::get('/user_update/employment/{id}', 'Api\Vps\UserUpdateController@updateEmployment');
+        Route::get('/user_update/educational/{id}', 'Api\Vps\UserUpdateController@updateEducational');
+        Route::get('/user_update/government/{id}', 'Api\Vps\UserUpdateController@updateGovernment');
+        Route::get('/user_update/details/{id}', 'Api\Vps\UserUpdateController@updateDetails');
+        Route::get('/rules/create', 'Api\Vps\RulesController@create');
+    });
+
+    Route::group([
+        'prefix' => 'settings', 'middleware' => ['auth']
+    ], function () {
+        Route::get('/department/dropdown', 'Api\Settings\DepartmentController@dropdown');
+        Route::get('/officelocation/dropdown', 'Api\Settings\OfficeLocationController@dropdown');
+        Route::get('/employment_type/dropdown', 'Api\Settings\EmploymentTypeController@dropdown');
+        Route::get('/designation/dropdown', 'Api\Settings\DesignationController@dropdown');
+        Route::get('/acl_rule_parent/dropdown', 'Api\Settings\ACLRulesController@dropdown');
+
+        Route::resource('/acl', 'Api\Settings\ACLRulesController');
+        Route::resource('/department', 'Api\Settings\DepartmentController');
+        Route::resource('/employee', 'Api\Settings\EmployeeController');
+        Route::resource('/costcenter', 'Api\Settings\CostCenterController');
+        Route::resource('/designation', 'Api\Settings\DesignationController');
+        Route::resource('/officelocation', 'Api\Settings\OfficeLocationController');
+        Route::resource('/employment', 'Api\Settings\EmploymentTypeController');
+        Route::resource('/portfolio', 'Api\Settings\PortfolioController');
+    });
+
+    Route::get('/countries', 'CountriesController@index');
+
+
+    Route::group([
+        'prefix' => 'epic', 'middleware' => ['auth']
+    ], function () {
+
+        Route::get('/{portfolio}/{environment}', 'EpicApiController@index');
+        Route::get('/{portfolio}/{environment}/config', 'EpicApiController@config');
+        Route::get('/{portfolio}/{environment}/verifyCustomer/', 'EpicApiController@verifyCustomer');
+        Route::get('/{portfolio}/{environment}/customer', 'EpicApiController@customer');
+        Route::get('/{portfolio}/{environment}/loans/{app_no}', 'EpicApiController@loans');
+//        Route::resource('/{portfolio}/{environment}/notes', 'EpicApiController@notes');
+//        Route::resource('/{portfolio}/{environment}/payments', 'EpicApiController@payments');
+//        Route::resource('/{portfolio}/{environment}/payments', 'EpicApiController@payroll');
+    });
+
+    /*QA System Routes*/
+    Route::group([
+        'prefix' => 'qa', 'middleware' => ['auth']
+    ], function () {
+        Route::get('/main', 'Api\QualityAssurance\DashBoardController@index');
+    });
+
+});
+
+Route::get('/{pages}', function ($name) {
+    return view('index');
+})->where('pages', '.*');
+
+/*End API Route*/
+//
+//Route::resource('/testcode', 'TestCode');
+//
+//Route::get('/execute/artisan', function () {
+//     Artisan::call('execute:testcode');
+//});
