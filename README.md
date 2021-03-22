@@ -1,6 +1,6 @@
-### Intranet
+## Intranet
 
-## This System built in Laravel Framework and VueJS
+### This System built in Laravel Framework and VueJS
 
 please contact owner for actual working demo
 
